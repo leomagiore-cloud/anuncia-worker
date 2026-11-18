@@ -1,4 +1,4 @@
-# AnuncIA Worker 2.0 (versão de teste)
+# AnuncIA Worker 2.0
 
 Aplicativo Windows que mantém a automação local conectada ao painel AnuncIA. O computador do usuário executa as publicações; o painel/Supabase continua sendo a fonte dos imóveis, imagens, contas e resultados.
 
@@ -10,6 +10,12 @@ Aplicativo Windows que mantém a automação local conectada ao painel AnuncIA. 
 - O perfil e os cookies são salvos localmente, separados por empresa e conta.
 - Nas próximas publicações, o Worker tenta reutilizar a sessão em modo headless (sem janela).
 - Se a sessão expirar ou o Facebook pedir confirmação, o Worker volta a abrir o navegador visível.
+
+## Distribuição e atualizações
+
+O instalador Windows é gerado com `npm run build-win`. As atualizações são publicadas por GitHub Releases: crie e envie uma tag no formato `vX.Y.Z` (igual à versão em `package.json`) para disparar `.github/workflows/release.yml`. O aplicativo verifica atualizações ao iniciar, oferece baixar e permite adiar; após o download, o usuário escolhe quando instalar. O recurso só funciona em builds instaladas e publicadas em Releases.
+
+Antes de distribuir a clientes, implemente o contrato descrito em `docs/AUTHENTICATION-CONTRACT.md`: a versão atual ainda depende de token global e tenant em `.env`.
 
 ## Configuração de teste interno
 
