@@ -1,0 +1,64 @@
+{
+  "name": "anuncia-worker",
+  "version": "2.0.0",
+  "description": "Aplicativo local do AnuncIA para automação de publicações no Facebook Marketplace",
+  "author": "AnuncIA",
+  "main": "electron-main.js",
+  "scripts": {
+    "start": "electron .",
+    "worker": "node index.js",
+    "post-agora": "node index.js --now",
+    "testar-login": "node src/test-login.js",
+    "build-win": "electron-builder --win --x64"
+  },
+  "build": {
+    "appId": "br.com.magiore.anuncia.worker",
+    "productName": "AnuncIA Worker",
+    "copyright": "Copyright © 2026 AnuncIA",
+    "directories": {
+      "output": "dist"
+    },
+    "asarUnpack": [
+      "node_modules/puppeteer/**"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "assets/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    },
+    "files": [
+      "**/*",
+      "!node_modules/.cache",
+      "!dist",
+      "!logs",
+      "!temp-images",
+      "!chrome-profile",
+      "!chrome-profiles",
+      "!facebook-profiles",
+      "!credentials.json",
+      "!*.env"
+    ]
+  },
+  "dependencies": {
+    "axios": "^1.6.8",
+    "dotenv": "^16.4.5",
+    "fs-extra": "^11.2.0",
+    "node-cron": "^3.0.3",
+    "node-notifier": "^10.0.1",
+    "puppeteer": "^21.11.0",
+    "puppeteer-extra": "^3.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2",
+    "sharp": "^0.33.3",
+    "winston": "^3.13.0"
+  },
+  "devDependencies": {
+    "electron": "^42.0.1",
+    "electron-builder": "^24.13.3"
+  }
+}
