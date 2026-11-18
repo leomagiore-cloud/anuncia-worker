@@ -3,6 +3,7 @@ require('dotenv').config();
   const { app, BrowserWindow, Tray, Menu, ipcMain, nativeImage, shell } = require('electron');
   const { fork } = require('child_process');
   const path = require('path');
+  const updater = require('./src/updateManager');
 
   let mainWindow = null;
   let tray = null;
@@ -114,6 +115,9 @@ require('dotenv').config();
     tray.setToolTip(`AnuncIA Worker — ${workerOnline ? 'Online' : 'Offline'}`);
   }
 
+  ipcMain.on('update-download', () => updater.downloadUpdate());
+  ipcMain.on('update-install', () => updater.installUpdate());
+
   ipcMain.on('cmd', (_, command) => {
     log('info', `Ação recebida da interface: ${command}`);
     if (command === 'minimizar') mainWindow?.minimize();
@@ -130,6 +134,7 @@ require('dotenv').config();
   app.whenReady().then(() => {
     app.setLoginItemSettings({ openAtLogin: true });
     criarJanela();
+    updater.initializeUpdater(mainWindow);
     const icon = nativeImage.createFromPath(path.join(__dirname, 'assets', 'icon.ico'));
     tray = new Tray(icon.isEmpty() ? nativeImage.createEmpty() : icon);
     tray.on('click', () => mainWindow.isVisible() ? mainWindow.hide() : (mainWindow.show(), mainWindow.focus()));
