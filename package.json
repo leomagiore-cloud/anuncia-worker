@@ -1,15 +1,14 @@
 {
   "name": "anuncia-worker",
-  "version": "2.0.0",
+  "version": "2.2.1",
   "description": "Aplicativo local do AnuncIA para automação de publicações no Facebook Marketplace",
   "author": "AnuncIA",
   "main": "electron-main.js",
   "scripts": {
     "start": "electron .",
-    "worker": "node index.js",
-    "post-agora": "node index.js --now",
     "testar-login": "node src/test-login.js",
-    "build-win": "electron-builder --win --x64"
+    "build-win": "electron-builder --win --x64",
+    "release": "electron-builder --win --x64 --publish always"
   },
   "build": {
     "appId": "br.com.magiore.anuncia.worker",
@@ -23,14 +22,18 @@
     ],
     "win": {
       "target": "nsis",
-      "icon": "assets/icon.ico"
+      "icon": "assets/icon.ico",
+      "artifactName": "AnuncIA-Worker-Setup.${ext}"
     },
     "nsis": {
       "oneClick": false,
       "perMachine": false,
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
-      "createStartMenuShortcut": true
+      "createStartMenuShortcut": true,
+      "shortcutName": "AnuncIA Worker",
+      "runAfterFinish": true,
+      "deleteAppDataOnUninstall": false
     },
     "files": [
       "**/*",
@@ -42,12 +45,28 @@
       "!chrome-profiles",
       "!facebook-profiles",
       "!credentials.json",
-      "!*.env"
+      "!*.env",
+      "!.env*",
+      "!anuncia-worker.zip",
+      "!AnuncIA",
+      "!*.code-workspace",
+      "!README.md",
+      "!servidor-painel",
+      "!INSTALADOR-WINDOWS.md"
+    ],
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "leomagiore-cloud",
+        "repo": "anuncia-worker",
+        "releaseType": "release"
+      }
     ]
   },
   "dependencies": {
     "axios": "^1.6.8",
     "dotenv": "^16.4.5",
+    "electron-updater": "^6.8.11",
     "fs-extra": "^11.2.0",
     "node-cron": "^3.0.3",
     "node-notifier": "^10.0.1",

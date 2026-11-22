@@ -1,4 +1,5 @@
 const Transport = require('winston-transport');
+const session = require('./session');
 
 const MAX_QUEUED_LOGS = 2000;
 const MAX_BATCH_SIZE = 100;
@@ -48,9 +49,9 @@ class PanelLogTransport extends Transport {
 
   async flush() {
     if (this.flushing || this.queue.length === 0) return;
-    const baseUrl = process.env.PANEL_API_URL?.replace(/\/+$/, '');
-    const token = process.env.PANEL_WORKER_TOKEN;
-    if (!baseUrl || !token) return;
+    const baseUrl = session.baseUrl;
+    const token = session.accessToken;
+    if (!token) return;
 
     this.flushing = true;
     const tenantId = this.queue[0].tenantId;

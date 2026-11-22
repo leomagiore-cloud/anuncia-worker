@@ -29,7 +29,7 @@ const logger = createLogger({
   ],
 });
 
-if (process.env.PANEL_API_URL && process.env.PANEL_WORKER_TOKEN) {
+{
   const PanelLogTransport = require('./panelLogTransport');
   const panelLogTransport = new PanelLogTransport();
   logger.add(panelLogTransport);

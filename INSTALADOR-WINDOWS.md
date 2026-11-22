@@ -25,3 +25,19 @@ Saída: `dist/AnuncIA-Worker-Setup-2.1.0.exe` (instalador NSIS, atalhos na área
 - O `.exe` não contém segredos, então pode ficar em GitHub Releases ou num botão "Baixar para Windows" no painel.
 - Sem assinatura digital, o Windows SmartScreen mostra "Windows protegeu seu PC". Para eliminar o aviso é preciso certificado de code signing (EV ou Azure Trusted Signing) configurado no electron-builder.
 - Atualizações automáticas (`electron-updater` + GitHub Releases) são um próximo passo; hoje o cliente reinstala a nova versão.
+
+
+## Publicar uma nova versão (atualização remota)
+1. Aumente a `version` no `package.json` (ex.: 2.2.0 → 2.2.1).
+2. Crie um token no GitHub (Settings → Developer settings → Personal access tokens, com permissão de escrever em *Contents* do repositório `anuncia-worker`).
+3. No PowerShell: `$env:GH_TOKEN="seu_token"` e depois `npm run release`.
+4. O comando gera o instalador e publica um Release no GitHub com `AnuncIA-Worker-Setup.exe`, `latest.yml` e o `.blockmap`.
+5. Quem já tem o app vê "Nova versão disponível — Atualizar agora" em até 4 horas (ou ao abrir o app), baixa só a diferença e reinicia sozinho.
+
+Link direto de download (sempre a última versão), usado no botão do painel:
+`https://github.com/leomagiore-cloud/anuncia-worker/releases/latest/download/AnuncIA-Worker-Setup.exe`
+
+Observações:
+- Quem tem a 2.1.x (sem atualizador) precisa instalar a 2.2.0 manualmente uma única vez.
+- O repositório precisa ser público para o app baixar atualizações sem token.
+- Para forçar todos a atualizarem (ex.: ameaça ou bug grave), use "Versão mínima obrigatória" na aba Admin do painel.

@@ -1,46 +1,50 @@
 const config = require('./config');
 const logger = require('./logger');
 const path = require('path');
+const session = require('./session');
 
-function getApiSettings() {
-  const baseUrl = process.env.PANEL_API_URL?.replace(/\/+$/, '');
-  const token = process.env.PANEL_WORKER_TOKEN;
-  if (!baseUrl || !token) {
-    throw new Error('PANEL_API_URL e PANEL_WORKER_TOKEN precisam estar configurados para usar o painel');
+async function request(path, options = {}, podeRenovar = true) {
+  if (!session.accessToken) {
+    throw new Error('Sessão não iniciada. Entre com sua conta AnuncIA no aplicativo.');
   }
-  const parsedUrl = new URL(baseUrl);
+  const parsedUrl = new URL(session.baseUrl);
   const isLocal = ['localhost', '127.0.0.1', '::1'].includes(parsedUrl.hostname);
   if (!isLocal && parsedUrl.protocol !== 'https:') {
-    throw new Error('PANEL_API_URL deve usar HTTPS em produção');
+    throw new Error('O endereço do painel deve usar HTTPS');
   }
-  return { baseUrl, token };
-}
 
-async function request(path, options = {}) {
-  const { baseUrl, token } = getApiSettings();
-  const response = await fetch(`${baseUrl}/api/worker/${path}`, {
+  const response = await fetch(`${session.baseUrl}/api/worker/${path}`, {
     ...options,
     headers: {
-      Authorization: `Bearer ${token}`,
+      Authorization: `Bearer ${session.accessToken}`,
+      'X-Worker-Version': process.env.WORKER_VERSION || '',
       ...(options.body ? { 'Content-Type': 'application/json' } : {}),
       ...options.headers,
     },
     signal: AbortSignal.timeout(30000),
   });
 
+  // Token expirado: pede um novo ao aplicativo e repete a chamada uma vez.
+  if (response.status === 401 && podeRenovar) {
+    await session.refresh();
+    return request(path, options, false);
+  }
+
   const body = await response.json().catch(() => ({}));
   if (!response.ok) {
-    throw new Error(body.error || `Painel respondeu HTTP ${response.status}`);
+    const erro = new Error(body.error || `Painel respondeu HTTP ${response.status}`);
+    erro.status = response.status;
+    erro.code = body.code;
+    if (['maintenance', 'blocked', 'update_required', 'plan_required'].includes(body.code)) {
+      session.setBlocked({ code: body.code, message: erro.message });
+    }
+    throw erro;
   }
-  return body;
-}
 
-async function listarTenants() {
-  const { tenantIds } = await request('tenants');
-  if (!Array.isArray(tenantIds)) {
-    throw new Error('O painel retornou uma lista de empresas inválida');
-  }
-  return tenantIds;
+  // Respondeu normalmente: tira a pausa. O plano só é reavaliado em credentials/jobs.
+  session.clearBlocked(['maintenance', 'blocked', 'update_required']);
+  if (/^(credentials|jobs)/.test(path)) session.clearBlocked(['plan_required']);
+  return body;
 }
 
 function limparCredenciais() {
@@ -134,6 +138,14 @@ async function finalizarImovel(tenantId, imovelId) {
   });
 }
 
+async function buscarAgenda(tenantId) {
+  const body = await request(`schedule?tenantId=${encodeURIComponent(tenantId)}`);
+  return {
+    enabled: Boolean(body.enabled),
+    times: Array.isArray(body.times) ? body.times.filter((t) => /^([01]\d|2[0-3]):[0-5]\d$/.test(t)) : [],
+  };
+}
+
 async function buscarComando(tenantId) {
   const query = new URLSearchParams({ tenantId });
   const { command } = await request(`commands?${query}`);
@@ -160,5 +172,6 @@ module.exports = {
   registrarResultados,
   finalizarImovel,
   buscarComando,
+  buscarAgenda,
   finalizarComando,
 };
