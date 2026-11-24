@@ -1,6 +1,6 @@
 {
   "name": "anuncia-worker",
-  "version": "2.2.1",
+  "version": "2.2.2",
   "description": "Aplicativo local do AnuncIA para automação de publicações no Facebook Marketplace",
   "author": "AnuncIA",
   "main": "electron-main.js",

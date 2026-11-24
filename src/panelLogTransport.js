@@ -67,6 +67,7 @@ class PanelLogTransport extends Transport {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
+          'X-Worker-Version': process.env.WORKER_VERSION || '',
         },
         body: JSON.stringify({
           tenantId,
